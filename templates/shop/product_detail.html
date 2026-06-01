@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} — MebelUz{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-container">
+        <div class="breadcrumb">
+            <a href="{% url 'home' %}">Bosh sahifa</a>
+            <span class="breadcrumb-sep">/</span>
+            <a href="{% url 'product_list' %}">Mahsulotlar</a>
+            <span class="breadcrumb-sep">/</span>
+            <a href="{% url 'product_list' %}?category={{ product.category.slug }}">{{ product.category.name }}</a>
+            <span class="breadcrumb-sep">/</span>
+            <span>{{ product.name }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-container">
+        <div class="product-detail-grid">
+            <!-- Image -->
+            <div class="animate-fade-up">
+                <div class="product-detail-img">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                    <span>{{ product.category.icon }}</span>
+                    {% endif %}
+                </div>
+                {% if product.images.all %}
+                <div style="display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap;">
+                    {% for img in product.images.all %}
+                    <div style="width: 80px; height: 80px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); cursor: pointer;">
+                        <img src="{{ img.image.url }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Info -->
+            <div class="animate-fade-up" style="animation-delay: 0.15s;">
+                <div class="product-detail-badge">{{ product.category.icon }} {{ product.category.name }}</div>
+                <h1 class="product-detail-title">{{ product.name }}</h1>
+
+                <!-- Rating -->
+                {% if product.reviews.count > 0 %}
+                <div class="flex items-center gap-1 mb-2">
+                    <div class="stars">
+                        {% for i in star_range %}
+                        <span class="star {% if i > avg_rating %}empty{% endif %}">★</span>
+                        {% endfor %}
+                    </div>
+                    <span style="font-size: 0.875rem; color: var(--text-muted);">{{ avg_rating }} ({{ product.reviews.count }} sharh)</span>
+                </div>
+                {% endif %}
+
+                <div class="product-detail-price">
+                    <span class="detail-price-current">{{ product.final_price|floatformat:0 }} so'm</span>
+                    {% if product.discount_price %}
+                    <span class="detail-price-old">{{ product.price|floatformat:0 }}</span>
+                    <span class="detail-price-badge">-{{ product.discount_percent }}%</span>
+                    {% endif %}
+                </div>
+
+                <p style="color: var(--text-muted); line-height: 1.8; margin-bottom: 1.5rem;">{{ product.description }}</p>
+
+                <!-- Specs -->
+                <div class="product-specs">
+                    {% if product.material %}<div class="spec-row"><span class="spec-label">Material</span><span class="spec-value">{{ product.get_material_display }}</span></div>{% endif %}
+                    {% if product.color %}<div class="spec-row"><span class="spec-label">Rang</span><span class="spec-value">{{ product.color }}</span></div>{% endif %}
+                    {% if product.dimensions %}<div class="spec-row"><span class="spec-label">O'lcham</span><span class="spec-value">{{ product.dimensions }}</span></div>{% endif %}
+                    {% if product.weight %}<div class="spec-row"><span class="spec-label">Vazn</span><span class="spec-value">{{ product.weight }} kg</span></div>{% endif %}
+                    <div class="spec-row">
+                        <span class="spec-label">Holat</span>
+                        <span class="spec-value" style="color: {% if product.stock > 0 %}var(--success){% else %}var(--error){% endif %};">
+                            {% if product.stock > 0 %}✓ Mavjud ({{ product.stock }} dona){% else %}✗ Tugagan{% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                {% if product.stock > 0 %}
+                <form method="post" action="{% url 'add_to_cart' product.id %}" id="add-cart-form">
+                    {% csrf_token %}
+                    <div class="qty-big">
+                        <span style="color: var(--text-muted); font-size: 0.875rem;">Miqdor:</span>
+                        <div class="qty-controls">
+                            <button type="button" class="qty-btn qty-decrease" data-target="qty-main">−</button>
+                            <span class="qty-num" id="qty-main">1</span>
+                            <button type="button" class="qty-btn qty-increase" data-target="qty-main">+</button>
+                        </div>
+                        <input type="hidden" name="quantity" id="qty-hidden" value="1">
+                    </div>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-primary btn-lg" data-add-cart="{{ product.id }}" style="flex: 1;">
+                            <i class="fas fa-shopping-bag"></i> Savatga qo'shish
+                        </button>
+                        <a href="{% url 'ai_chat' %}" class="btn btn-outline btn-lg">
+                            <i class="fas fa-robot"></i> AI maslahat
+                        </a>
+                    </div>
+                </form>
+                {% else %}
+                <div style="text-align: center; padding: 1.5rem; background: var(--bg-3); border-radius: var(--radius-lg); border: 1px solid var(--border);">
+                    <p style="color: var(--text-muted);">Bu mahsulot hozirda mavjud emas</p>
+                </div>
+                {% endif %}
+
+                <!-- Features -->
+                <div style="display: flex; gap: 1.5rem; margin-top: 2rem; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                        <i class="fas fa-truck" style="color: var(--gold);"></i> Tez yetkazib berish
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                        <i class="fas fa-shield-alt" style="color: var(--gold);"></i> 1 yil kafolat
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                        <i class="fas fa-undo" style="color: var(--gold);"></i> Qaytarish mumkin
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews -->
+        <div style="margin-top: 4rem;">
+            <div class="section-header reveal" style="text-align: left; margin-bottom: 2rem;">
+                <div class="section-tag">Fikrlar</div>
+                <h2 class="section-title" style="font-size: 1.8rem;">Mijozlar <em>sharhlari</em></h2>
+            </div>
+
+            <!-- Add review form -->
+            {% if user.is_authenticated and not user_review %}
+            <div class="info-box mb-3 reveal">
+                <div class="info-box-title">Sharh qoldiring</div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div style="margin-bottom: 1rem;">
+                        <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem;">Baho</label>
+                        <div class="star-rating-input" style="display: flex; gap: 0.5rem; font-size: 1.8rem; cursor: pointer;">
+                            {% for i in star_range %}
+                            <span class="star-input" data-val="{{ i }}">☆</span>
+                            {% endfor %}
+                            <input type="hidden" name="rating" value="5">
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label class="form-label" style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem;">Izoh</label>
+                        <textarea name="comment" rows="4" class="form-input" style="width: 100%; resize: vertical;" placeholder="Mahsulot haqida fikringizni yozing..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Sharh qoldirish</button>
+                </form>
+            </div>
+            {% elif not user.is_authenticated %}
+            <div class="info-box mb-3 text-center reveal">
+                <p style="color: var(--text-muted);">Sharh qoldirish uchun <a href="{% url 'login' %}" style="color: var(--gold);">tizimga kiring</a></p>
+            </div>
+            {% endif %}
+
+            <!-- Reviews list -->
+            {% if reviews %}
+            <div>
+                {% for review in reviews %}
+                <div class="review-card reveal">
+                    <div class="review-header">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 36px; height: 36px; background: var(--gold-dim); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--gold); font-weight: 600;">
+                                {{ review.user.username|first|upper }}
+                            </div>
+                            <div>
+                                <div class="review-user">{{ review.user.username }}</div>
+                                <div class="stars" style="font-size: 0.8rem;">
+                                    {% for i in star_range %}
+                                    <span class="star {% if i > review.rating %}empty{% endif %}">★</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="review-date">{{ review.created_at|date:"d.m.Y" }}</div>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.75rem;">{{ review.comment }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding: 2rem;">
+                <div class="empty-state-icon">💬</div>
+                <p>Hali sharh yo'q. Birinchi bo'lib fikr bildiring!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Related products -->
+        {% if related_products %}
+        <div style="margin-top: 4rem;">
+            <div class="section-header reveal" style="text-align: left; margin-bottom: 2rem;">
+                <div class="section-tag">O'xshash</div>
+                <h2 class="section-title" style="font-size: 1.8rem;">O'xshash <em>mahsulotlar</em></h2>
+            </div>
+            <div class="products-grid animate-stagger">
+                {% for p in related_products %}
+                <div class="product-card">
+                    <a href="{% url 'product_detail' p.slug %}">
+                        <div class="product-card-img">
+                            {% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.name }}" loading="lazy">
+                            {% else %}<div class="product-card-placeholder">{{ p.category.icon }}</div>{% endif %}
+                        </div>
+                    </a>
+                    <div class="product-card-body">
+                        <a href="{% url 'product_detail' p.slug %}">
+                            <div class="product-card-name">{{ p.name }}</div>
+                        </a>
+                        <div class="product-card-price">
+                            <span class="price-current">{{ p.final_price|floatformat:0 }} so'm</span>
+                        </div>
+                        <a href="{% url 'product_detail' p.slug %}" class="btn btn-outline w-full btn-sm">Ko'rish</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Sync qty hidden input
+const qtyNum = document.getElementById('qty-main');
+const qtyHidden = document.getElementById('qty-hidden');
+if (qtyNum && qtyHidden) {
+    const observer = new MutationObserver(() => { qtyHidden.value = qtyNum.textContent; });
+    observer.observe(qtyNum, { childList: true, characterData: true, subtree: true });
+}
+// Star rating
+const stars = document.querySelectorAll('.star-input');
+const ratingInput = document.querySelector('.star-rating-input input[name="rating"]');
+stars.forEach((star, i) => {
+    star.addEventListener('click', () => {
+        if (ratingInput) ratingInput.value = i + 1;
+        stars.forEach((s, j) => { s.textContent = j <= i ? '★' : '☆'; s.style.color = j <= i ? 'var(--gold-light)' : 'var(--text-dim)'; });
+    });
+    star.addEventListener('mouseover', () => {
+        stars.forEach((s, j) => { s.textContent = j <= i ? '★' : '☆'; s.style.color = j <= i ? 'var(--gold-light)' : 'var(--text-dim)'; });
+    });
+});
+document.querySelector('.star-rating-input')?.addEventListener('mouseleave', () => {
+    const val = parseInt(ratingInput?.value || 0);
+    stars.forEach((s, j) => { s.textContent = j < val ? '★' : '☆'; s.style.color = j < val ? 'var(--gold-light)' : 'var(--text-dim)'; });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Buyurtma berish — MebelUz{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-container">
+        <div class="breadcrumb">
+            <a href="{% url 'home' %}">Bosh sahifa</a>
+            <span class="breadcrumb-sep">/</span>
+            <a href="{% url 'cart' %}">Savat</a>
+            <span class="breadcrumb-sep">/</span>
+            <span>Buyurtma</span>
+        </div>
+        <h1 class="page-header-title">📦 Buyurtma Berish</h1>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-container">
+        <div class="checkout-grid">
+            <!-- Form -->
+            <div class="checkout-form animate-fade-up">
+                <h2 style="font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 1.5rem;">Yetkazib berish ma'lumotlari</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">To'liq ism *</label>
+                            <input type="text" name="full_name" class="form-input" required placeholder="Isim Familiya" value="{{ user.get_full_name }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Telefon *</label>
+                            <input type="tel" name="phone" class="form-input" required placeholder="+998 90 123 45 67">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Shahar *</label>
+                            <input type="text" name="city" class="form-input" required placeholder="Toshkent">
+                        </div>
+                        <div class="form-group form-full">
+                            <label class="form-label">Manzil *</label>
+                            <input type="text" name="address" class="form-input" required placeholder="Ko'cha, uy raqami...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Qo'shimcha izoh</label>
+                        <textarea name="notes" class="form-input" rows="3" style="width: 100%; resize: vertical;" placeholder="Kuryer uchun qo'shimcha ma'lumot..."></textarea>
+                    </div>
+                    <div class="divider"></div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <h3 style="font-family: var(--font-display); font-size: 1.2rem; margin-bottom: 1rem;">To'lov usuli</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border: 1px solid var(--gold); border-radius: var(--radius); cursor: pointer; background: var(--gold-dim);">
+                                <input type="radio" name="payment" value="cash" checked style="accent-color: var(--gold);">
+                                <span><strong>💵 Naqd pul</strong> — Yetkazib berilganda to'lov</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; opacity: 0.6;">
+                                <input type="radio" name="payment" value="card" disabled style="accent-color: var(--gold);">
+                                <span>💳 Karta — (tez orada)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full btn-lg">
+                        <i class="fas fa-check"></i> Buyurtmani tasdiqlash
+                    </button>
+                </form>
+            </div>
+
+            <!-- Order Summary -->
+            <div style="animation: fade-up 0.5s ease 0.15s both;">
+                <div class="cart-summary">
+                    <div class="summary-title">Buyurtmangiz</div>
+                    {% for item in cart.items.all %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                        <div>
+                            <div style="font-size: 0.875rem;">{{ item.product.name }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ item.quantity }} x {{ item.product.final_price|floatformat:0 }}</div>
+                        </div>
+                        <div style="font-weight: 500;">{{ item.subtotal|floatformat:0 }} so'm</div>
+                    </div>
+                    {% endfor %}
+                    <div class="summary-row">
+                        <span>Mahsulotlar</span>
+                        <span>{{ cart.total_price|floatformat:0 }} so'm</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Yetkazib berish</span>
+                        <span style="color: var(--success);">Bepul</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>Jami to'lov</span>
+                        <span class="summary-total-price">{{ cart.total_price|floatformat:0 }} so'm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

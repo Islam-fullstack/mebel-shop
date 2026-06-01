@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Buyurtma #{{ order.id }} — MebelUz{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-header-container">
+        <div class="breadcrumb">
+            <a href="{% url 'order_list' %}">Buyurtmalarim</a>
+            <span class="breadcrumb-sep">/</span>
+            <span>#{{ order.id }}</span>
+        </div>
+        <h1 class="page-header-title">Buyurtma #{{ order.id }}</h1>
+    </div>
+</div>
+<div class="section">
+    <div class="section-container">
+        <div class="grid-2">
+            <div class="info-box">
+                <div class="info-box-title">Yetkazib berish</div>
+                <div class="spec-row mb-1"><span class="spec-label">Ism</span><span>{{ order.full_name }}</span></div>
+                <div class="spec-row mb-1"><span class="spec-label">Telefon</span><span>{{ order.phone }}</span></div>
+                <div class="spec-row mb-1"><span class="spec-label">Shahar</span><span>{{ order.city }}</span></div>
+                <div class="spec-row"><span class="spec-label">Manzil</span><span>{{ order.address }}</span></div>
+                {% if order.notes %}<div class="spec-row mt-1"><span class="spec-label">Izoh</span><span>{{ order.notes }}</span></div>{% endif %}
+            </div>
+            <div class="info-box">
+                <div class="info-box-title">Holat</div>
+                <span class="status-badge status-{{ order.status }}" style="font-size: 1rem; padding: 0.5rem 1rem;">{{ order.get_status_display }}</span>
+                <div class="spec-row mt-2"><span class="spec-label">Sana</span><span>{{ order.created_at|date:"d.m.Y H:i" }}</span></div>
+                <div class="spec-row"><span class="spec-label">Jami</span><span style="color: var(--gold); font-weight: 600;">{{ order.total_price|floatformat:0 }} so'm</span></div>
+            </div>
+        </div>
+        <div class="data-table-wrap mt-3">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Mahsulot</th><th>Narx</th><th>Miqdor</th><th>Jami</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr>
+                        <td>{{ item.product_name }}</td>
+                        <td>{{ item.price|floatformat:0 }} so'm</td>
+                        <td>{{ item.quantity }}</td>
+                        <td style="color: var(--gold); font-weight: 600;">{{ item.subtotal|floatformat:0 }} so'm</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

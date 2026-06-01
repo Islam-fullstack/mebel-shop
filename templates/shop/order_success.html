@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Buyurtma qabul qilindi — MebelUz{% endblock %}
+{% block content %}
+<div class="success-page">
+    <div class="success-card">
+        <span class="success-icon">🎉</span>
+        <h1 class="success-title">Buyurtma qabul qilindi!</h1>
+        <p class="success-text">
+            Buyurtma raqami: <span class="order-num">#{{ order.id }}</span><br>
+            Tez orada siz bilan bog'lanamiz.
+        </p>
+        <div style="background: var(--bg-3); border-radius: var(--radius); padding: 1rem; margin-bottom: 1.5rem; text-align: left;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                <span style="color: var(--text-muted);">Ism</span><span>{{ order.full_name }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                <span style="color: var(--text-muted);">Telefon</span><span>{{ order.phone }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.875rem;">
+                <span style="color: var(--text-muted);">Jami</span>
+                <span style="color: var(--gold); font-weight: 600;">{{ order.total_price|floatformat:0 }} so'm</span>
+            </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <a href="{% url 'order_list' %}" class="btn btn-primary w-full">Buyurtmalarimni ko'rish</a>
+            <a href="{% url 'home' %}" class="btn btn-outline w-full">Bosh sahifaga qaytish</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

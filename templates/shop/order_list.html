@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Buyurtmalarim — MebelUz{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-header-container">
+        <div class="breadcrumb"><a href="{% url 'home' %}">Bosh sahifa</a> <span class="breadcrumb-sep">/</span> <span>Buyurtmalarim</span></div>
+        <h1 class="page-header-title">📦 Buyurtmalarim</h1>
+    </div>
+</div>
+<div class="section">
+    <div class="section-container">
+        {% if orders %}
+        <div class="data-table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Sana</th>
+                        <th>Mahsulotlar</th>
+                        <th>Jami</th>
+                        <th>Holat</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td><strong>#{{ order.id }}</strong></td>
+                        <td style="color: var(--text-muted);">{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                        <td>{{ order.items.count }} ta mahsulot</td>
+                        <td style="color: var(--gold); font-weight: 600;">{{ order.total_price|floatformat:0 }} so'm</td>
+                        <td><span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                        <td><a href="{% url 'order_detail' order.id %}" class="btn btn-ghost btn-sm"><i class="fas fa-eye"></i></a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <div class="empty-state-title">Hali buyurtma yo'q</div>
+            <a href="{% url 'product_list' %}" class="btn btn-primary mt-3">Xarid boshlash</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

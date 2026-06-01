@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Savat — MebelUz{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-container">
+        <div class="breadcrumb">
+            <a href="{% url 'home' %}">Bosh sahifa</a>
+            <span class="breadcrumb-sep">/</span>
+            <span>Savat</span>
+        </div>
+        <h1 class="page-header-title">🛒 Xarid Savati</h1>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-container">
+        {% if cart.items.all %}
+        <div class="cart-grid">
+            <!-- Cart items -->
+            <div>
+                <div class="cart-items">
+                    {% for item in cart.items.all %}
+                    <div class="cart-item" id="item-{{ item.id }}">
+                        <div class="cart-item-img">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                            {% else %}
+                            {{ item.product.category.icon }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <a href="{% url 'product_detail' item.product.slug %}">
+                                <div class="cart-item-name">{{ item.product.name }}</div>
+                            </a>
+                            <div class="cart-item-price">{{ item.product.final_price|floatformat:0 }} so'm / dona</div>
+                            {% if item.product.color %}
+                            <div style="font-size: 0.75rem; color: var(--text-dim);">{{ item.product.color }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="qty-controls">
+                            {% csrf_token %}
+                            <form method="post" action="{% url 'update_cart' item.id %}" style="display: contents;">
+                                {% csrf_token %}
+                                <button type="button" class="qty-btn" data-item-id="{{ item.id }}" data-cart-action="decrease">−</button>
+                            </form>
+                            <span class="qty-num">{{ item.quantity }}</span>
+                            <form method="post" action="{% url 'update_cart' item.id %}" style="display: contents;">
+                                {% csrf_token %}
+                                <button type="button" class="qty-btn" data-item-id="{{ item.id }}" data-cart-action="increase">+</button>
+                            </form>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: 600; color: var(--gold); margin-bottom: 0.5rem;">{{ item.subtotal|floatformat:0 }} so'm</div>
+                            <form method="post" action="{% url 'update_cart' item.id %}">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-ghost btn-sm" data-item-id="{{ item.id }}" data-cart-action="remove" style="color: var(--error);">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div style="margin-top: 1.5rem;">
+                    <a href="{% url 'product_list' %}" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i> Xarid davom etish
+                    </a>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="cart-summary">
+                <div class="summary-title">Buyurtma xulosasi</div>
+                <div class="summary-row">
+                    <span>Mahsulotlar ({{ cart.total_items }} ta)</span>
+                    <span>{{ cart.total_price|floatformat:0 }} so'm</span>
+                </div>
+                <div class="summary-row">
+                    <span>Yetkazib berish</span>
+                    <span style="color: var(--success);">Bepul</span>
+                </div>
+                <div class="summary-total">
+                    <span>Jami</span>
+                    <span class="summary-total-price">{{ cart.total_price|floatformat:0 }} so'm</span>
+                </div>
+                {% if user.is_authenticated %}
+                <a href="{% url 'checkout' %}" class="btn btn-primary w-full btn-lg">
+                    <i class="fas fa-credit-card"></i> Buyurtma berish
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}?next={% url 'checkout' %}" class="btn btn-primary w-full btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Kirish va buyurtma berish
+                </a>
+                <a href="{% url 'register' %}" class="btn btn-outline w-full mt-1">Ro'yxatdan o'tish</a>
+                {% endif %}
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.5rem;">
+                        <span><i class="fas fa-truck" style="color: var(--gold); margin-right: 0.5rem;"></i> Bepul yetkazib berish</span>
+                        <span><i class="fas fa-shield-alt" style="color: var(--gold); margin-right: 0.5rem;"></i> Xavfsiz to'lov</span>
+                        <span><i class="fas fa-undo" style="color: var(--gold); margin-right: 0.5rem;"></i> 14 kun ichida qaytarish</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🛒</div>
+            <div class="empty-state-title">Savatingiz bo'sh</div>
+            <p>Hali hech narsa qo'shilmagan. Xaridni boshlang!</p>
+            <a href="{% url 'product_list' %}" class="btn btn-primary mt-3 btn-lg">
+                <i class="fas fa-couch"></i> Mahsulotlarga o'tish
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mahsulotlar — MebelUz{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-header-container">
+        <div class="breadcrumb">
+            <a href="{% url 'home' %}">Bosh sahifa</a>
+            <span class="breadcrumb-sep">/</span>
+            <span>Mahsulotlar</span>
+            {% if current_category %}
+            <span class="breadcrumb-sep">/</span>
+            <span>{{ current_category.name }}</span>
+            {% endif %}
+        </div>
+        <h1 class="page-header-title">
+            {% if current_category %}{{ current_category.icon }} {{ current_category.name }}
+            {% elif search_q %}Qidiruv: "{{ search_q }}"
+            {% else %}Barcha Mahsulotlar{% endif %}
+        </h1>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">{{ products.count }} ta mahsulot topildi</p>
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-container">
+
+        <!-- Category pills -->
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+            <a href="{% url 'product_list' %}" class="btn btn-sm {% if not current_category %}btn-primary{% else %}btn-outline{% endif %}">
+                Barchasi
+            </a>
+            {% for cat in categories %}
+            <a href="{% url 'product_list' %}?category={{ cat.slug }}" class="btn btn-sm {% if current_category.slug == cat.slug %}btn-primary{% else %}btn-outline{% endif %}">
+                {{ cat.icon }} {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar">
+            <form method="get" class="filter-form" id="filter-form">
+                {% if current_category %}
+                <input type="hidden" name="category" value="{{ current_category.slug }}">
+                {% endif %}
+                <div class="form-group" style="grid-column: 1 / -1; max-width: 400px;">
+                    <label class="form-label">Qidirish</label>
+                    <div style="position: relative;">
+                        <input type="text" name="q" value="{{ search_q }}" class="form-input" placeholder="Mahsulot nomi..." style="padding-left: 2.5rem;">
+                        <i class="fas fa-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Min narx</label>
+                    <input type="number" name="min_price" value="{{ request.GET.min_price }}" class="form-input" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max narx</label>
+                    <input type="number" name="max_price" value="{{ request.GET.max_price }}" class="form-input" placeholder="...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Material</label>
+                    <select name="material" class="form-select">
+                        <option value="">Barchasi</option>
+                        {% for val, label in material_choices %}
+                        <option value="{{ val }}" {% if selected_material == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Saralash</label>
+                    <select name="sort" class="form-select">
+                        <option value="-created_at" {% if sort_by == '-created_at' %}selected{% endif %}>Yangi</option>
+                        <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Narx: arzon</option>
+                        <option value="-price" {% if sort_by == '-price' %}selected{% endif %}>Narx: qimmat</option>
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>A-Z</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <a href="{% url 'product_list' %}" class="btn btn-outline">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Products -->
+        {% if products %}
+        <div class="products-grid animate-stagger">
+            {% for product in products %}
+            <div class="product-card">
+                <a href="{% url 'product_detail' product.slug %}">
+                    <div class="product-card-img">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                        {% else %}
+                        <div class="product-card-placeholder">{{ product.category.icon }}</div>
+                        {% endif %}
+                        {% if product.discount_price %}
+                        <span class="product-card-badge sale">-{{ product.discount_percent }}%</span>
+                        {% elif product.is_featured %}
+                        <span class="product-card-badge">⭐ Top</span>
+                        {% endif %}
+                        {% if product.stock == 0 %}
+                        <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; font-size: 0.875rem; color: var(--text-muted);">Tugagan</div>
+                        {% endif %}
+                    </div>
+                </a>
+                <div class="product-card-body">
+                    <div class="product-card-cat">{{ product.category.name }}</div>
+                    <a href="{% url 'product_detail' product.slug %}">
+                        <div class="product-card-name">{{ product.name }}</div>
+                    </a>
+                    {% if product.material %}
+                    <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.5rem;">
+                        <i class="fas fa-cube"></i> {{ product.get_material_display }}
+                        {% if product.color %} · {{ product.color }}{% endif %}
+                    </div>
+                    {% endif %}
+                    <div class="product-card-price">
+                        <span class="price-current">{{ product.final_price|floatformat:0 }} so'm</span>
+                        {% if product.discount_price %}
+                        <span class="price-old">{{ product.price|floatformat:0 }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-card-actions">
+                        {% if product.stock > 0 %}
+                        <form method="post" action="{% url 'add_to_cart' product.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="button" class="btn btn-primary w-full" data-add-cart="{{ product.id }}">
+                                <i class="fas fa-shopping-bag"></i> Savatga
+                            </button>
+                        </form>
+                        {% else %}
+                        <button class="btn btn-outline w-full" disabled style="opacity: 0.5;">Tugagan</button>
+                        {% endif %}
+                        <a href="{% url 'product_detail' product.slug %}" class="btn btn-outline btn-icon">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <div class="empty-state-title">Mahsulot topilmadi</div>
+            <p>Boshqa kalit so'z yoki filtr bilan urinib ko'ring</p>
+            <a href="{% url 'product_list' %}" class="btn btn-primary mt-3">Filterni tozalash</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

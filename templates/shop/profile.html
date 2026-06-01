@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Profil — MebelUz{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="page-header-container">
+        <h1 class="page-header-title">👤 Mening Profilim</h1>
+    </div>
+</div>
+<div class="section">
+    <div class="section-container">
+        <div class="profile-grid">
+            <div class="profile-sidebar">
+                <div class="profile-avatar"><i class="fas fa-user"></i></div>
+                <div class="profile-name">{{ user.get_full_name|default:user.username }}</div>
+                <div class="profile-email">{{ user.email }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem;">
+                    A'zo bo'lgan: {{ user.date_joined|date:"d.m.Y" }}
+                </div>
+                <div class="profile-sidebar-links">
+                    <a href="{% url 'profile' %}" class="active"><i class="fas fa-user"></i> Profil</a>
+                    <a href="{% url 'order_list' %}"><i class="fas fa-box"></i> Buyurtmalar</a>
+                    <a href="{% url 'cart' %}"><i class="fas fa-shopping-bag"></i> Savat</a>
+                    <a href="{% url 'logout' %}" style="color: var(--error) !important;"><i class="fas fa-sign-out-alt"></i> Chiqish</a>
+                </div>
+            </div>
+            <div>
+                <div class="info-box mb-3">
+                    <div class="info-box-title">Statistika</div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <div style="text-align: center; padding: 1rem; background: var(--bg-3); border-radius: var(--radius);">
+                            <div style="font-family: var(--font-display); font-size: 2rem; color: var(--gold);">{{ user.orders.count }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Buyurtmalar</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: var(--bg-3); border-radius: var(--radius);">
+                            <div style="font-family: var(--font-display); font-size: 2rem; color: var(--gold);">{{ user.reviews.count }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Sharhlar</div>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background: var(--bg-3); border-radius: var(--radius);">
+                            <div style="font-family: var(--font-display); font-size: 2rem; color: var(--gold);">🥇</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Premium</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <div class="info-box-title">So'nggi buyurtmalar</div>
+                    {% if orders %}
+                    <div class="data-table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>#</th><th>Sana</th><th>Jami</th><th>Holat</th><th></th></tr></thead>
+                            <tbody>
+                                {% for order in orders %}
+                                <tr>
+                                    <td>#{{ order.id }}</td>
+                                    <td style="color: var(--text-muted);">{{ order.created_at|date:"d.m.Y" }}</td>
+                                    <td style="color: var(--gold);">{{ order.total_price|floatformat:0 }} so'm</td>
+                                    <td><span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                                    <td><a href="{% url 'order_detail' order.id %}" class="btn btn-ghost btn-sm"><i class="fas fa-eye"></i></a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{% url 'order_list' %}" class="btn btn-outline mt-2 btn-sm">Barcha buyurtmalar</a>
+                    {% else %}
+                    <div class="empty-state" style="padding: 2rem;">
+                        <p style="color: var(--text-muted);">Hali buyurtma yo'q</p>
+                        <a href="{% url 'product_list' %}" class="btn btn-primary mt-2 btn-sm">Xarid boshlash</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

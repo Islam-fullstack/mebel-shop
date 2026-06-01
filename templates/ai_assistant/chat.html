@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Yordamchi — MebelUz{% endblock %}
+
+{% block extra_css %}
+<style>
+.chat-page {
+    height: calc(100vh - 70px);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+}
+.chat-header {
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-2);
+}
+.chat-header-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.chat-avatar {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--gold), #a07020);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    position: relative;
+}
+.chat-avatar::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    background: var(--success);
+    border-radius: 50%;
+    border: 2px solid var(--bg-2);
+}
+.chat-avatar-name { font-weight: 500; }
+.chat-avatar-status { font-size: 0.75rem; color: var(--success); }
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    scroll-behavior: smooth;
+}
+.message {
+    display: flex;
+    gap: 0.75rem;
+    max-width: 75%;
+    animation: fade-up 0.3s ease both;
+}
+.message.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+.message-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+}
+.message.assistant .message-avatar {
+    background: linear-gradient(135deg, var(--gold), #a07020);
+    color: var(--bg);
+}
+.message.user .message-avatar {
+    background: var(--bg-3);
+    color: var(--text-muted);
+}
+.message-bubble {
+    padding: 0.875rem 1.125rem;
+    border-radius: 16px;
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+.message.assistant .message-bubble {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px 16px 16px 16px;
+}
+.message.user .message-bubble {
+    background: var(--gold-dim);
+    border: 1px solid rgba(196,160,80,0.2);
+    border-radius: 16px 4px 16px 16px;
+    color: var(--text);
+}
+.message-time {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 0.4rem;
+    text-align: right;
+}
+.message.assistant .message-time { text-align: left; }
+.typing-indicator {
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 75%;
+    animation: fade-up 0.3s ease both;
+}
+.typing-indicator.visible { display: flex; }
+.typing-dots {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px 16px 16px 16px;
+    padding: 0.875rem 1.125rem;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--text-dim);
+    border-radius: 50%;
+    animation: typing-bounce 1.2s ease infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing-bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); background: var(--gold); }
+}
+.chat-input-area {
+    padding: 1.25rem 2rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg-2);
+}
+.chat-input-form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-end;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.chat-input {
+    flex: 1;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.875rem 1.125rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    outline: none;
+    resize: none;
+    min-height: 48px;
+    max-height: 120px;
+    transition: var(--transition);
+    font-family: var(--font-body);
+    line-height: 1.5;
+}
+.chat-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(196,160,80,0.1);
+}
+.chat-send-btn {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--gold), #a07020);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg);
+    font-size: 1rem;
+    transition: var(--transition);
+    flex-shrink: 0;
+    border: none;
+    cursor: pointer;
+}
+.chat-send-btn:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(196,160,80,0.3); }
+.chat-send-btn:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
+.chat-suggestions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.suggestion-btn {
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.4rem 0.875rem;
+    border-radius: 100px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+.suggestion-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--gold-dim);
+}
+.welcome-msg {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-muted);
+}
+.welcome-icon { font-size: 3.5rem; margin-bottom: 1rem; animation: float 3s ease infinite; display: block; }
+.welcome-title { font-family: var(--font-display); font-size: 1.6rem; color: var(--text); margin-bottom: 0.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-page">
+    <!-- Header -->
+    <div class="chat-header">
+        <div class="chat-header-info">
+            <div class="chat-avatar">🤖</div>
+            <div>
+                <div class="chat-avatar-name">MebelUz AI Yordamchi</div>
+                <div class="chat-avatar-status">● Onlayn</div>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <a href="{% url 'product_list' %}" class="btn btn-outline btn-sm">
+                <i class="fas fa-couch"></i> Mahsulotlar
+            </a>
+            <button onclick="clearChat()" class="btn btn-ghost btn-sm" title="Tozalash">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages" id="chat-messages">
+        {% if not messages %}
+        <div class="welcome-msg" id="welcome-msg">
+            <span class="welcome-icon">🤖</span>
+            <div class="welcome-title">Salom! Men MebelUz AI Yordamchisiman</div>
+            <p>Mebel tanlashda, narx-navo, yetkazib berish va boshqa savollarda yordam beraman.</p>
+        </div>
+        {% endif %}
+
+        {% for msg in messages %}
+        <div class="message {{ msg.role }}">
+            <div class="message-avatar">
+                {% if msg.role == 'assistant' %}🤖{% else %}<i class="fas fa-user"></i>{% endif %}
+            </div>
+            <div>
+                <div class="message-bubble">{{ msg.content|linebreaksbr }}</div>
+                <div class="message-time">{{ msg.created_at|date:"H:i" }}</div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Typing indicator -->
+        <div class="typing-indicator" id="typing-indicator">
+            <div class="message-avatar" style="background: linear-gradient(135deg, var(--gold), #a07020); color: var(--bg);">🤖</div>
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input area -->
+    <div class="chat-input-area">
+        <div class="chat-suggestions" id="suggestions">
+            <button class="suggestion-btn" onclick="sendSuggestion(this)">Eng arzon divanlar</button>
+            <button class="suggestion-btn" onclick="sendSuggestion(this)">Oshxona stoli tavsiya qiling</button>
+            <button class="suggestion-btn" onclick="sendSuggestion(this)">Yetkazib berish qancha vaqt?</button>
+            <button class="suggestion-btn" onclick="sendSuggestion(this)">Kafolat bormi?</button>
+        </div>
+        <div class="chat-input-form">
+            <textarea
+                id="chat-input"
+                class="chat-input"
+                placeholder="Savolingizni yozing... (Enter yuborish, Shift+Enter yangi qator)"
+                rows="1"
+            ></textarea>
+            <button id="send-btn" class="chat-send-btn" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const csrfToken = '{{ csrf_token }}';
+const messagesContainer = document.getElementById('chat-messages');
+const input = document.getElementById('chat-input');
+const sendBtn = document.getElementById('send-btn');
+const typingIndicator = document.getElementById('typing-indicator');
+
+// Auto-scroll to bottom
+function scrollToBottom() {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+scrollToBottom();
+
+// Auto-resize textarea
+input.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// Enter key handling
+input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+function addMessage(content, role) {
+    const welcomeMsg = document.getElementById('welcome-msg');
+    if (welcomeMsg) welcomeMsg.remove();
+    document.getElementById('suggestions')?.remove();
+
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    const avatarContent = role === 'assistant' ? '🤖' : '<i class="fas fa-user"></i>';
+    const msg = document.createElement('div');
+    msg.className = `message ${role}`;
+    msg.innerHTML = `
+        <div class="message-avatar">${avatarContent}</div>
+        <div>
+            <div class="message-bubble">${escapeHtml(content).replace(/\n/g, '<br>')}</div>
+            <div class="message-time">${time}</div>
+        </div>
+    `;
+    typingIndicator.before(msg);
+    scrollToBottom();
+}
+
+function escapeHtml(text) {
+    return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+    addMessage(text, 'user');
+    input.value = '';
+    input.style.height = 'auto';
+    sendBtn.disabled = true;
+    typingIndicator.classList.add('visible');
+    scrollToBottom();
+
+    try {
+        const res = await fetch('/ai/chat/yuborish/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ message: text }),
+        });
+        const data = await res.json();
+        typingIndicator.classList.remove('visible');
+        if (data.success) {
+            addMessage(data.response, 'assistant');
+        } else {
+            addMessage('Xatolik yuz berdi. Iltimos, qayta urinib ko\'ring.', 'assistant');
+        }
+    } catch (err) {
+        typingIndicator.classList.remove('visible');
+        addMessage('Ulanish xatosi. Internet aloqangizni tekshiring.', 'assistant');
+    } finally {
+        sendBtn.disabled = false;
+        input.focus();
+    }
+}
+
+function sendSuggestion(btn) {
+    input.value = btn.textContent;
+    sendMessage();
+}
+
+async function clearChat() {
+    if (!confirm('Suhbatni tozalashni xohlaysizmi?')) return;
+    await fetch('/ai/chat/tozalash/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken },
+    });
+    location.reload();
+}
+
+input.focus();
+</script>
+{% endblock %}

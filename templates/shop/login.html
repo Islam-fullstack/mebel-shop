@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Kirish — MebelUz{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div style="text-align: center; font-size: 2.5rem; margin-bottom: 0.5rem;">🪑</div>
+        <h1 class="auth-title">Xush kelibsiz</h1>
+        <p class="auth-subtitle">Akkauntingizga kiring</p>
+        <form method="post" class="django-form">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <ul class="errorlist">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% if form.non_field_errors %}
+            <div style="color: var(--error); font-size: 0.875rem; margin-bottom: 1rem;">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary w-full mt-2">Kirish</button>
+        </form>
+        <div class="auth-footer">
+            Akkauntingiz yo'qmi? <a href="{% url 'register' %}">Ro'yxatdan o'ting</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
