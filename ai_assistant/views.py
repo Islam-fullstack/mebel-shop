@@ -37,7 +37,8 @@ def send_message(request):
 
     ChatMessage.objects.create(session=session, role='user', content=user_message)
 
-    history = [{'role': m.role, 'content': m.content} for m in session.messages.all()[:-1]]
+    all_messages = list(session.messages.all())
+    history = [{'role': m.role, 'content': m.content} for m in all_messages[:-1]]
     ai_response = chat_with_ai(history, user_message)
 
     ChatMessage.objects.create(session=session, role='assistant', content=ai_response)
